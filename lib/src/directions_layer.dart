@@ -9,7 +9,6 @@ import 'latlng.dart';
 import 'osrm_route_response.dart';
 
 class DirectionsLayer extends StatefulWidget {
-
   final List<LatLng> coordinates;
   final Color? color;
   final double? strokeWidth;
@@ -28,7 +27,6 @@ class DirectionsLayer extends StatefulWidget {
 }
 
 class _DirectionsLayerState extends State<DirectionsLayer> {
-
   final Color _defaultColor = Colors.blue;
   final double _defaultStrokeWidth = 3.0;
 
@@ -41,12 +39,13 @@ class _DirectionsLayerState extends State<DirectionsLayer> {
   }
 
   void _getDirections() async {
-    final destinations = widget.coordinates.map((location) => '${location.longitude},${location.latitude}').join(';');
+    final destinations = widget.coordinates
+        .map((location) => '${location.longitude},${location.latitude}')
+        .join(';');
     final http.Response response;
     try {
-      response = await http.get(
-          Uri.parse('https://router.project-osrm.org/route/v1/driving/$destinations?overview=full&geometries=geojson')
-      );
+      response = await http.get(Uri.parse(
+          'https://routing.openstreetmap.de/routed-bike/route/v1/driving/$destinations?overview=full&geometries=geojson'));
       if (response.statusCode != 200) {
         _onCompleted(false);
       } else {
@@ -67,15 +66,15 @@ class _DirectionsLayerState extends State<DirectionsLayer> {
     final routes = OsrmRouteResponse.fromJson(jsonDecode(response.body));
     _directions.clear();
     for (var route in routes.routes) {
-      _directions.add(
-        Polyline(
-          points: route.geometry.coordinates.map((e) => latlong2.LatLng(e.points.last, e.points.first)).toList(),
-          strokeJoin: StrokeJoin.round,
-          borderStrokeWidth: widget.strokeWidth ?? _defaultStrokeWidth,
-          color: widget.color ?? _defaultColor,
-          borderColor: widget.color ?? _defaultColor,
-        )
-      );
+      _directions.add(Polyline(
+        points: route.geometry.coordinates
+            .map((e) => latlong2.LatLng(e.points.last, e.points.first))
+            .toList(),
+        strokeJoin: StrokeJoin.round,
+        borderStrokeWidth: widget.strokeWidth ?? _defaultStrokeWidth,
+        color: widget.color ?? _defaultColor,
+        borderColor: widget.color ?? _defaultColor,
+      ));
     }
     _onCompleted(_directions.isNotEmpty);
     setState(() {});
